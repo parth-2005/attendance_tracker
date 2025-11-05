@@ -4,7 +4,7 @@ class Subject {
   Subject({
     required this.id,
     required this.name,
-    Map<String, bool>? attendance,
+    Map<String, String>? attendance,
     DateTime? startDate,
     DateTime? endDate,
     int? totalLectures,
@@ -19,7 +19,8 @@ class Subject {
 
   String id;
   String name;
-  Map<String, bool> attendance;
+  /// attendance: dateKey (yyyy-MM-dd) -> one of 'present','absent','canceled'
+  Map<String, String> attendance;
   int totalLectures;
   int attendedLectures;
   DateTime startDate;
@@ -53,7 +54,7 @@ class Subject {
     final last = endDate.isBefore(date) ? endDate : date;
     int count = 0;
     attendance.forEach((k, v) {
-      if (v != true) return;
+      if (v != 'present') return;
       try {
         final dt = DateTime.parse(k);
         if (dt.isAfter(last) || dt.isBefore(startDate)) return;
@@ -74,7 +75,22 @@ class SubjectAdapter extends TypeAdapter<Subject> {
     try {
       final id = reader.read() as String;
       final name = reader.read() as String;
-      final attendanceMap = Map<String, bool>.from(reader.read() as Map? ?? {});
+      // Support older stored formats (Map<String,bool>) and newer string states.
+      final rawAttendance = Map<String, dynamic>.from(reader.read() as Map? ?? {});
+      final attendanceMap = <String, String>{};
+      rawAttendance.forEach((k, v) {
+        try {
+          if (v is bool) {
+            attendanceMap[k] = v ? 'present' : 'absent';
+          } else if (v is String) {
+            // accept existing string states (present/absent/canceled) or any other string
+            attendanceMap[k] = v;
+          } else if (v is int) {
+            // treat 1 as present, 0 as absent
+            attendanceMap[k] = v == 1 ? 'present' : 'absent';
+          }
+        } catch (_) {}
+      });
       final totalLectures = reader.read() as int;
       final attendedLectures = reader.read() as int;
       final startMillis = reader.read() as int;
@@ -95,7 +111,7 @@ class SubjectAdapter extends TypeAdapter<Subject> {
       return Subject(
         id: id,
         name: name,
-        attendance: attendanceMap,
+  attendance: attendanceMap,
         totalLectures: totalLectures,
         attendedLectures: attendedLectures,
         startDate: DateTime.fromMillisecondsSinceEpoch(startMillis),

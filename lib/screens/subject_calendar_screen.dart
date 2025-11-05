@@ -40,15 +40,18 @@ class _SubjectCalendarScreenState extends State<SubjectCalendarScreen> {
 
     final subj = _subject!;
 
-    // Prepare date sets for fast lookup
+    // Prepare date sets for fast lookup (present / absent / canceled)
     final present = <DateTime>{};
     final absent = <DateTime>{};
+    final canceled = <DateTime>{};
     subj.attendance.forEach((k, v) {
       try {
         final d = DateTime.parse(k);
         final dt = DateTime(d.year, d.month, d.day);
-        if (v == true) {
+        if (v == 'present') {
           present.add(dt);
+        } else if (v == 'canceled') {
+          canceled.add(dt);
         } else {
           absent.add(dt);
         }
@@ -77,6 +80,9 @@ class _SubjectCalendarScreenState extends State<SubjectCalendarScreen> {
                   if (present.contains(d)) {
                     return _coloredDay(day.day.toString(), Colors.green[400]!);
                   }
+                  if (canceled.contains(d)) {
+                    return _coloredDay(day.day.toString(), Colors.grey[400]!);
+                  }
                   if (absent.contains(d)) {
                     return _coloredDay(day.day.toString(), Colors.red[400]!);
                   }
@@ -86,6 +92,9 @@ class _SubjectCalendarScreenState extends State<SubjectCalendarScreen> {
                   final d = DateTime(day.year, day.month, day.day);
                   if (present.contains(d)) {
                     return _coloredDay(day.day.toString(), Colors.green[600]!);
+                  }
+                  if (canceled.contains(d)) {
+                    return _coloredDay(day.day.toString(), Colors.grey[600]!);
                   }
                   if (absent.contains(d)) {
                     return _coloredDay(day.day.toString(), Colors.red[600]!);
@@ -110,6 +119,8 @@ class _SubjectCalendarScreenState extends State<SubjectCalendarScreen> {
                 _legendDot(Colors.green[400]!, 'Present'),
                 const SizedBox(width: 12),
                 _legendDot(Colors.red[400]!, 'Absent'),
+                const SizedBox(width: 12),
+                _legendDot(Colors.grey[400]!, 'Canceled'),
               ],
             ),
           ),

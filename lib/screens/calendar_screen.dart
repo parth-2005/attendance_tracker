@@ -96,7 +96,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   itemCount: subjects.length,
                   itemBuilder: (context, idx) {
                     final s = subjects[idx];
-                    final current = s.attendance[dateKey];
+                      final current = s.attendance[dateKey];
 
                     // If this CalendarScreen is parameterized for a particular subject,
                     // only show that subject and allow marking as before.
@@ -125,7 +125,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         duration: const Duration(milliseconds: 180),
                                         child: const Icon(Icons.check, color: Colors.green),
                                       ),
-                                      onPressed: () => _markAttendance(s, dateKey, true),
+                                      onPressed: () => _markAttendance(s, dateKey, 'present'),
                                     ),
                                     IconButton(
                                       icon: AnimatedScale(
@@ -133,12 +133,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         duration: const Duration(milliseconds: 180),
                                         child: const Icon(Icons.close, color: Colors.red),
                                       ),
-                                      onPressed: () => _markAttendance(s, dateKey, false),
+                                      onPressed: () => _markAttendance(s, dateKey, 'absent'),
+                                    ),
+                                    IconButton(
+                                      icon: AnimatedScale(
+                                        scale: _animating[s.id] == true ? 1.4 : 1.0,
+                                        duration: const Duration(milliseconds: 180),
+                                        child: const Icon(Icons.event_busy, color: Colors.grey),
+                                      ),
+                                      onPressed: () => _markAttendance(s, dateKey, 'canceled'),
                                     ),
                                   ],
                                 )
                               : null,
-                          subtitle: current == null ? const Text('Not marked') : Text(current ? 'Present' : 'Absent'),
+                          subtitle: current == null
+                              ? const Text('Not marked')
+                              : (current == 'present'
+                                  ? const Text('Present')
+                                  : (current == 'absent'
+                                      ? const Text('Absent')
+                                      : const Text('Canceled'))),
                         ),
                       );
                     }
@@ -155,7 +169,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       child: ListTile(
                         leading: Container(width: 12, height: 12, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
                         title: Text(s.name),
-                        subtitle: current == null ? const Text('Not marked on this date') : Text(current ? 'Present' : 'Absent'),
+            subtitle: current == null
+              ? const Text('Not marked on this date')
+              : (current == 'present'
+                ? const Text('Present')
+                : (current == 'absent'
+                  ? const Text('Absent')
+                  : const Text('Canceled'))),
                         trailing: canMarkMulti
                             ? IconButton(
                                 icon: AnimatedScale(
@@ -163,7 +183,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   duration: const Duration(milliseconds: 180),
                                   child: const Icon(Icons.check, color: Colors.green),
                                 ),
-                                onPressed: () => _markAttendance(s, dateKey, true),
+                                onPressed: () => _markAttendance(s, dateKey, 'present'),
                               )
                             : null,
                         onTap: () {
@@ -194,7 +214,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
         try {
           final d = DateTime.parse(k);
           final date = DateTime(d.year, d.month, d.day);
-          final color = v == true ? Colors.green : Colors.red;
+          final color = v == 'present'
+              ? Colors.green
+              : (v == 'canceled' ? Colors.grey : Colors.red);
           _events.putIfAbsent(date, () => []).add(color);
         } catch (_) {}
       });
@@ -205,7 +227,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final color = _colorForSubject(s);
         s.attendance.forEach((k, v) {
           try {
-            if (v != true) return; // only show presents in multi-subject view
+            if (v != 'present') return; // only show presents in multi-subject view
             final d = DateTime.parse(k);
             final date = DateTime(d.year, d.month, d.day);
             _events.putIfAbsent(date, () => []).add(color);
@@ -221,7 +243,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return _palette[idx];
   }
 
-  void _markAttendance(Subject s, String dateKey, bool present) {
+  void _markAttendance(Subject s, String dateKey, String status) {
     final box = Hive.box<Subject>('subjects');
   // previous value (if any) - currently unused since totals are computed
   // from the attendance map on demand.
@@ -250,7 +272,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       }
     } catch (_) {}
 
-    s.attendance[dateKey] = present;
+    s.attendance[dateKey] = status;
     awaitPut(box, s);
     setState(() {});
   }
