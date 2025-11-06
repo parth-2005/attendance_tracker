@@ -1,4 +1,6 @@
 import 'package:attendance_tracker/app.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'widgets/biometric_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/subject.dart';
@@ -7,6 +9,11 @@ import 'models/settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase early
+  try {
+    await Firebase.initializeApp();
+  } catch (_) {}
 
   await Hive.initFlutter();
   Hive.registerAdapter(SubjectAdapter());
@@ -51,5 +58,5 @@ Future<void> main() async {
     settingsBox.put('prefs', Settings(minAttendance: 75.0, darkMode: true));
   }
 
-  runApp(const App());
+  runApp(BiometricGate(child: const App()));
 }

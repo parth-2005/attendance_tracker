@@ -41,6 +41,13 @@ dependencies:
   intl: ^0.18.0
   go_router: ^16.3.0
   # navigation will use Flutter's Navigator to avoid go_router SDK constraints
+  google_sign_in: ^6.2.4
+  googleapis: ^10.0.0
+  http: ^0.13.6
+  flutter_secure_storage: ^8.0.0
+  firebase_core: ^2.11.0
+  firebase_auth: ^4.6.0
+  local_auth: ^2.1.5
 
 dev_dependencies:
   flutter_test:

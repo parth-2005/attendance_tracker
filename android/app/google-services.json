@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195774709115",
+    "project_id": "attendance-tracker-aae23",
+    "storage_bucket": "attendance-tracker-aae23.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195774709115:android:0a90e606a6d5e3f46951de",
+        "android_client_info": {
+          "package_name": "com.example.attendance_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArI4Mgo81cHDC-TAHjPStU_85e4546jJQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
